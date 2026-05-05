@@ -1,0 +1,15 @@
+streamlit
+pandas
+scikit-learn
+# Add libraries for notes analysis (e.g., tensorflow, opencv-python, Pillow)
+tensorflow
+opencv-python
+Pillow
+# Add libraries for voice analysis (e.g., librosa, pydub, soundfile)
+librosa
+pydub
+soundfile
+fastapi
+pydantic
+whisper
+numpy
