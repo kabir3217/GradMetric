@@ -6,10 +6,10 @@ services:
     region: oregon
   # Run build commands from this directory (monorepo support)
   rootDirectory: "Model"
-  # Build: install python requirements from the backend folder
-  buildCommand: "pip install --upgrade pip setuptools wheel && pip install -r requirements.txt"
-    # Start: attempt to download model if MODEL_URL is set, then run uvicorn
-    startCommand: "python download_model.py || true && uvicorn main:app --host 0.0.0.0 --port $PORT"
+  # Build: install python requirements from the backend folder (explicit cd to be safe)
+  buildCommand: "cd Model && pip install --upgrade pip setuptools wheel && pip install -r requirements.txt"
+  # Start: cd into Model, attempt to download model if MODEL_URL is set, then run uvicorn
+  startCommand: "cd Model && python download_model.py || true && uvicorn main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PORT
         value: "8000"
