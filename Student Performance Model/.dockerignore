@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+uploads/
+venv_librosa/
+.git
+.venv
+node_modules
+frontend/.next
+frontend/node_modules

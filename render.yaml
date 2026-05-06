@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: gradmetric-backend
+    env: docker
+    plan: starter
+    region: oregon
+    dockerContext: "Student Performance Model"
+    dockerfilePath: "Student Performance Model/Dockerfile"
+    # Optional: configure health checks and build commands
+    envVars:
+      - key: PORT
+        value: "8000"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    healthCheckPath: "/health"
+    healthCheckIntervalSeconds: 10
+    healthCheckTimeoutSeconds: 5
+    # If you want Render to ping the root URL for readiness, you can enable it here
+    # healthCheckShouldFailAfter: 3

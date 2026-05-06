@@ -1,8 +1,40 @@
 import streamlit as st
 from PIL import Image
-from cgpa_predictor import predict_cgpa
-from notes_analyzer import analyze_student_notes
-from voice_analyzer import analyze_voice
+import requests
+import os
+
+# Streamlit will call the FastAPI backend endpoints instead of importing local modules.
+# Configure the API base URL via the API_BASE environment variable if needed.
+API_BASE = os.environ.get("API_BASE", "http://localhost:8000")
+
+
+def api_predict_cgpa(payload: dict):
+    try:
+        resp = requests.post(f"{API_BASE}/predict-cgpa", json=payload, timeout=10)
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def api_analyze_notes(uploaded_file):
+    try:
+        files = {"file": (uploaded_file.name, uploaded_file.read(), uploaded_file.type)}
+        resp = requests.post(f"{API_BASE}/analyze-notes", files=files, timeout=30)
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        return {"error": str(e)}
+
+
+def api_analyze_voice(uploaded_file):
+    try:
+        files = {"file": (uploaded_file.name, uploaded_file.read(), uploaded_file.type)}
+        resp = requests.post(f"{API_BASE}/analyze-voice", files=files, timeout=60)
+        resp.raise_for_status()
+        return resp.json()
+    except Exception as e:
+        return {"error": str(e)}
 
 st.set_page_config(
     layout="wide",
@@ -111,11 +143,29 @@ elif st.session_state.page == 'report':
     st.balloons()
     with st.spinner("Analyzing... Synthesizing insights..."):
         cgpa_input_data = st.session_state.student_data.get('cgpa_inputs', {})
-        predicted_cgpa = predict_cgpa(cgpa_input_data) if cgpa_input_data else 0.0
+        predicted_cgpa = 0.0
+        notes_analysis = {'error': 'No notes image provided.'}
+        voice_analysis = {'error': 'No voice file provided.'}
+
+        if cgpa_input_data:
+            resp = api_predict_cgpa(cgpa_input_data)
+            if resp and 'predicted_cgpa' in resp:
+                predicted_cgpa = resp['predicted_cgpa']
+            elif resp and 'error' in resp:
+                st.error(f"CGPA API error: {resp['error']}")
+
         notes_image_file = st.session_state.student_data.get('notes_image', None)
-        notes_analysis = analyze_student_notes(notes_image_file) if notes_image_file else {'error': 'No notes image provided.'}
+        if notes_image_file:
+            # streamlit UploadedFile supports read(); rewind is not necessary here as we read once
+            notes_analysis = api_analyze_notes(notes_image_file)
+            if notes_analysis and 'error' in notes_analysis:
+                st.warning(f"Notes analysis warning: {notes_analysis['error']}")
+
         voice_audio_file = st.session_state.student_data.get('voice_file', None)
-        voice_analysis = analyze_voice(voice_audio_file) if voice_audio_file else {'error': 'No voice file provided.'}
+        if voice_audio_file:
+            voice_analysis = api_analyze_voice(voice_audio_file)
+            if voice_analysis and 'error' in voice_analysis:
+                st.warning(f"Voice analysis warning: {voice_analysis['error']}")
     st.header("Individual Analysis Results")
     col1, col2 = st.columns(2)
     with col1:

@@ -195,6 +195,26 @@ async def analyze_full_student(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@app.get('/health')
+def health_check():
+    # Basic health check: model presence and tesseract availability
+    model_exists = False
+    try:
+        from cgpa_predictor import MODEL_PATH
+        model_exists = os.path.exists(MODEL_PATH)
+    except Exception:
+        model_exists = False
+
+    tess = shutil.which("tesseract") is not None
+
+    status = {
+        "model_present": model_exists,
+        "tesseract_present": tess,
+        "ok": model_exists
+    }
+    return status
+
 if __name__ == "__main__":
     import os
     import uvicorn

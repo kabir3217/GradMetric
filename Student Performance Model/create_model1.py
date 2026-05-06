@@ -61,6 +61,6 @@ print("Feature Significance (P-Values):")
 print("-" * 40)
 print(p_values.round(4))
 
-model_filename = 'cgpa_model1.pkl'
+model_filename = 'cgpa_model2.pkl'
 joblib.dump(model, model_filename)
 print(f"\nSuccess! Model saved as '{model_filename}'.")

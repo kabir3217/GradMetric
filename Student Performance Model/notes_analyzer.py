@@ -1,4 +1,10 @@
-import cv2
+try:
+    import cv2
+    CV2_AVAILABLE = True
+except Exception:
+    cv2 = None
+    CV2_AVAILABLE = False
+
 import pytesseract
 from PIL import Image
 import numpy as np
@@ -33,6 +39,9 @@ def correct_skew(image: np.ndarray):
     """
     Detects and corrects the skew of the image.
     """
+    if not CV2_AVAILABLE:
+        # Shouldn't be called when cv2 is missing, but guard anyway
+        raise RuntimeError("OpenCV (cv2) is not available")
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     gray = cv2.bitwise_not(gray)
     thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
@@ -66,6 +75,9 @@ def analyze_student_notes(pil_image_object):
     Analyzes handwritten notes with an enhanced preprocessing pipeline 
     to maximize Tesseract accuracy.
     """
+
+    if not CV2_AVAILABLE:
+        return {"error": "OpenCV (cv2) is not installed in this environment. Install `opencv-python` or `opencv-python-headless` to enable notes analysis."}
 
     try:
        
