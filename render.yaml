@@ -1,12 +1,15 @@
 services:
   - type: web
     name: gradmetric-backend
-    env: docker
+    env: python
     plan: starter
     region: oregon
-    dockerContext: "Student Performance Model"
-    dockerfilePath: "Student Performance Model/Dockerfile"
-    # Optional: configure health checks and build commands
+  # Run build commands from this directory (monorepo support)
+  rootDirectory: "Model"
+  # Build: install python requirements from the backend folder
+  buildCommand: "pip install --upgrade pip setuptools wheel && pip install -r requirements.txt"
+    # Start: attempt to download model if MODEL_URL is set, then run uvicorn
+    startCommand: "python download_model.py || true && uvicorn main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PORT
         value: "8000"
@@ -15,5 +18,5 @@ services:
     healthCheckPath: "/health"
     healthCheckIntervalSeconds: 10
     healthCheckTimeoutSeconds: 5
-    # If you want Render to ping the root URL for readiness, you can enable it here
-    # healthCheckShouldFailAfter: 3
+    # Note: system packages like tesseract-ocr and ffmpeg are not installed via pip.
+    # If your app requires those binaries, the Docker approach is recommended.
